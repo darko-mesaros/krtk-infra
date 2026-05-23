@@ -5,17 +5,17 @@ GOOGLE_SECRET_ARN := `jq -r '.SecretsStack.googleApiSecretArn // "NOT_DEPLOYED"'
 # Deploy the main stack and save outputs
 deploy:
   @echo "⏳Deploying the CDK stack..."
-  npx cdk deploy KrtkRsStack --outputs-file main-outputs.json
+  npx cdk deploy KrtkRsStack --outputs-file main-outputs.json --profile personal
 
 # Deploy the secrets stack and save outputs
 deploy-secrets-stack:
   @echo "⏳Deploying the Secrets CDK stack..."
-  npx cdk deploy SecretsStack --outputs-file secrets-outputs.json
+  npx cdk deploy SecretsStack --outputs-file secrets-outputs.json --profile personal
 
 # Invalidate CDN Cache
 invalidate-cache:
   @echo "⏳Clearing the CDN Cache..."
-  aws cloudfront create-invalidation --distribution-id {{DISTRIBUTION_ID}} --paths "/*"
+  aws cloudfront create-invalidation --distribution-id {{DISTRIBUTION_ID}} --paths "/*" --profile personal
 
 # Store the Google API key for safe website check
 set-google-api-key:
@@ -36,4 +36,4 @@ clean:
 
 # Destroy all
 bye: clean
-  cdk destroy --force
+  npx cdk destroy --force --profile personal
