@@ -61,7 +61,3 @@ just invalidate-cache
 ## Architecture
 
 ![Architecture diagram](img/arch.png)
-
-CloudFront → API Gateway (HTTP API) → Lambda (Rust) → DynamoDB
-
-CloudFront real-time logs → Kinesis → process_analytics Lambda → DynamoDB (visit counts)
