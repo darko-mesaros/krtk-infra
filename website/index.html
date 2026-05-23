@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>krtk.rs - URL Shortener</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .htmx-indicator{
+        display: none;
+      }
+      .htmx-request .htmx-indicator{
+        display: inline;
+      }
+      .htmx-request.htmx-indicator{
+        display: inline;
+      }
+      .spinner {
+        border: 4px solid #f3f3f3;
+        /* border-top: 4px solid #3498db;*/
+        border-top: 4px solid #008000;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg);}
+        100% { transform: rotate(360deg);}
+      }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-full flex flex-col">
+    <main class="flex-grow">
+        <div class="max-w-6xl mx-auto p-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-center gap-5 mb-6">
+                    <img src="/assets/logo.png" alt="krtk.rs logo" class="w-16 h-16">
+                    <h1 class="text-3xl font-bold m-0">krtk.rs</h1>
+                </div>
+
+                <form id="shorten-form"
+                      hx-post="/api/links"
+                      hx-trigger="submit"
+                      hx-swap="innerHtml"
+                      hx-target="#result"
+                      hx-indicator="#table-loader"
+                      hx-on::after-request="if(event.detail.successful) {
+                        this.reset();
+                        htmx.trigger('#link-list', 'refreshLinks')
+                      }">
+                    <div class="flex gap-3 mb-6">
+                        <input type="text"
+                               id="url_input"
+                               name="url_to_shorten"
+                               placeholder="Enter URL to shorten"
+                               required
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" 
+                                id="submit-btn"
+                                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            Shorten
+                        </button>
+                    </div>
+                </form>
+
+                <div id="table-loader" class="htmx-indicator p-4">
+                  <div class="flex items-center space-x-3 bg-yellow-100 px-4 py-2 rounded-lg shadow-sm justify-center">
+                      <div class="spinner"></div>
+                      <span class="text-gray-600 font-medium">Shortening link...</span>
+                  </div>
+                </div>
+                <div id="result" class="mb-6"></div>
+
+                <!-- All shortened URLs -->
+                <h3 class="text-xl font-semibold mb-4">Shortened links</h3>
+                <div id="link-list" hx-get="/api/links" hx-trigger="load, refreshLinks" hx-target="#linksTable" hx-indicator="#table-rows-loader">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="py-3 px-4 text-left bg-gray-50">Timestamp</th>
+                                <th class="py-3 px-4 text-left bg-gray-50">Title</th>
+                                <th class="py-3 px-4 text-left bg-gray-50 w-48">Short Link</th>
+                                <th class="py-3 px-4 text-left bg-gray-50">Clicks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="linksTable" class="divide-y">
+                        </tbody>
+                    </table>
+
+                    <div id="table-rows-loader" class="htmx-indicator flex p-4">
+                      <div class="flex items-center space-x-3 bg-yellow-100 px-4 py-2 rounded-lg shadow-sm justify-center">
+                          <div class="spinner"></div>
+                          <span class="text-gray-600 font-medium">Loading links...</span>
+                      </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="py-6 mt-8 border-t border-gray-200">
+        <div class="max-w-3xl mx-auto px-6 text-center text-gray-600">
+            <p class="text-sm">
+                ❤️ Powered by 
+                <a href="https://aws.amazon.com/cdk/">AWS CDK</a>, 
+                <a href="https://www.rust-lang.org/">Rust</a> 🦀 and 
+                <a href="https://docs.aws.amazon.com/lambda/latest/dg/welcome.html">AWS Lambda</a>.
+                </br>
+                <a href="/terms">Terms of Service</a> |
+                <a href="/privacy">Privacy Policy</a>
+                </br>
+                Cobbled together by <a href="https://github.com/darko-mesaros" class="text-blue-600 hover:text-blue-800">Darko</a>
+            </p>
+            <p class="text-xs">Version: v0.0.5 ALPHA</p>
+        </div>
+    </footer>
+
+    <script src="/assets/main.js"></script>
+</body>
+</html>
