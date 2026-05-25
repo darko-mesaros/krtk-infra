@@ -122,10 +122,20 @@ export class KrtkRsStack extends cdk.Stack {
         SHORTENER_DOMAIN: 'krtk.rs',
       }
     });
+    const deleteLinkLambda = new RustFunction(this, 'deleteLink', {
+      manifestPath: '../krtk-lambdas/lambda/delete_link/Cargo.toml',
+      runtime: 'provided.al2023',
+      timeout: cdk.Duration.seconds(30),
+      environment: {
+        TABLE_NAME: linkDatabase.tableName,
+        SHORTENER_DOMAIN: 'krtk.rs',
+      }
+    });
     // Table permissions
     linkDatabase.grantReadData(getLinksLambda);
     linkDatabase.grantReadData(visitLinkLambda);
     linkDatabase.grantWriteData(createLinkLambda);
+    linkDatabase.grantWriteData(deleteLinkLambda);
 
     // Secrets permissions
     props.googleApiKeySecret.grantRead(createLinkLambda);
@@ -160,6 +170,7 @@ export class KrtkRsStack extends cdk.Stack {
         allowMethods: [
           CorsHttpMethod.GET,
           CorsHttpMethod.POST,
+          CorsHttpMethod.DELETE,
           CorsHttpMethod.OPTIONS,
         ],
         allowOrigins: ['*'],
@@ -200,6 +211,12 @@ export class KrtkRsStack extends cdk.Stack {
       path: '/{linkId}',
       methods: [HttpMethod.GET],
       integration: visitLinkInteg
+    });
+    const deleteLinkInteg = new HttpLambdaIntegration('deleteLinkInteg', deleteLinkLambda);
+    api.addRoutes({
+      path: '/api/links/{linkId}',
+      methods: [HttpMethod.DELETE],
+      integration: deleteLinkInteg
     });
 
     // CF
